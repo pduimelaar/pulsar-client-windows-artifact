@@ -1,0 +1,56 @@
+name: Build Pulsar Windows artifact
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.16.0'
+          cache: npm
+
+      - name: Show environment
+        shell: pwsh
+        run: |
+          node --version
+          npm --version
+          node -p "process.platform"
+          node -p "process.arch"
+          node -p "process.versions.napi"
+
+      - name: Install Pulsar client
+        shell: pwsh
+        run: npm install
+
+      - name: Verify Pulsar client
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "node_modules\pulsar-client\lib\binding\pulsar.node")) {
+            throw "pulsar.node ontbreekt"
+          }
+
+          node -e "require('pulsar-client'); console.log('Pulsar client geladen')"
+
+      - name: Create artifact archive
+        shell: pwsh
+        run: |
+          Compress-Archive `
+            -Path node_modules,package.json,package-lock.json `
+            -DestinationPath pulsar-client-1.18.0-win-x64-node24.zip `
+            -Force
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pulsar-client-1.18.0-win-x64-node24
+          path: pulsar-client-1.18.0-win-x64-node24.zip
+          if-no-files-found: error
+          retention-days: 7

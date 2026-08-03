@@ -1,0 +1,8 @@
+{
+  "name": "pulsar-client-windows-artifact",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "pulsar-client": "1.18.0"
+  }
+}
